@@ -120,14 +120,21 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(join(__dirname, "../dist/public/index.html"));
   });
 } else {
-  // In development, serve a simple page or redirect to Vite dev server
+  // In development, serve the built frontend
   app.get("/", (req, res) => {
-    res.json({ 
-      message: "Development server running", 
-      frontend: "Frontend should be running on http://localhost:5173",
-      api: "API available at /api/*",
-      health: "/api/health"
-    });
+    res.sendFile(join(__dirname, "../dist/public/index.html"));
+  });
+  
+  // Serve static files in development too
+  app.use(express.static(join(__dirname, "../dist/public")));
+  
+  // Catch-all for SPA routes in development
+  app.get("*", (req, res) => {
+    if (req.path.startsWith('/api/')) {
+      res.status(404).json({ error: 'API endpoint not found' });
+    } else {
+      res.sendFile(join(__dirname, "../dist/public/index.html"));
+    }
   });
 }
 
