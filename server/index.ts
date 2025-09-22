@@ -1,4 +1,8 @@
 import dotenv from "dotenv";
+
+// Load environment variables first, before any other imports
+dotenv.config();
+
 import express from "express";
 import { createServer } from "http";
 import { WebSocketServer } from "ws";
@@ -9,9 +13,6 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { db } from "./db.js";
 import { setupAuth } from "./auth.js";
-
-// Load environment variables
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
