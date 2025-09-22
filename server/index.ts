@@ -11,6 +11,7 @@ import session from "express-session";
 import passport from "passport";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { existsSync } from "fs";
 // Import database and auth conditionally to avoid connection errors
 let db, setupAuth;
 try {
@@ -67,12 +68,8 @@ if (process.env.NODE_ENV === "production") {
 } else {
   // In development, serve static files if they exist
   const staticPath = join(__dirname, "../dist/public");
-  try {
-    if (require('fs').existsSync(staticPath)) {
-      app.use(express.static(staticPath));
-    }
-  } catch (error) {
-    console.log("Static files not available yet");
+  if (existsSync(staticPath)) {
+    app.use(express.static(staticPath));
   }
 }
 
@@ -128,7 +125,7 @@ wss.on('connection', (ws) => {
 if (process.env.NODE_ENV === "production") {
   app.get("*", (req, res) => {
     const indexPath = join(__dirname, "../dist/public/index.html");
-    if (require('fs').existsSync(indexPath)) {
+    if (existsSync(indexPath)) {
       res.sendFile(indexPath);
     } else {
       res.status(404).json({ error: "Frontend not built yet. Run 'npm run build' first." });
@@ -138,7 +135,7 @@ if (process.env.NODE_ENV === "production") {
   // In development, serve the built frontend if available
   app.get("/", (req, res) => {
     const indexPath = join(__dirname, "../dist/public/index.html");
-    if (require('fs').existsSync(indexPath)) {
+    if (existsSync(indexPath)) {
       res.sendFile(indexPath);
     } else {
       res.json({
@@ -156,7 +153,7 @@ if (process.env.NODE_ENV === "production") {
       res.status(404).json({ error: 'API endpoint not found' });
     } else {
       const indexPath = join(__dirname, "../dist/public/index.html");
-      if (require('fs').existsSync(indexPath)) {
+      if (existsSync(indexPath)) {
         res.sendFile(indexPath);
       } else {
         res.status(404).json({ error: "Page not found. Frontend not built yet." });
