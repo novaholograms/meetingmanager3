@@ -119,6 +119,16 @@ if (process.env.NODE_ENV === "production") {
   app.get("*", (req, res) => {
     res.sendFile(join(__dirname, "../dist/public/index.html"));
   });
+} else {
+  // In development, serve a simple page or redirect to Vite dev server
+  app.get("/", (req, res) => {
+    res.json({ 
+      message: "Development server running", 
+      frontend: "Frontend should be running on http://localhost:5173",
+      api: "API available at /api/*",
+      health: "/api/health"
+    });
+  });
 }
 
 const PORT = process.env.PORT || 5000;
