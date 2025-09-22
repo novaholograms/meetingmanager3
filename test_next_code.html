@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Next Code</title>
+</head>
+<body>
+    <h1>Test Código Siguiente</h1>
+    <button onclick="testNextCode()">Test API</button>
+    <div id="result"></div>
+    
+    <script>
+        async function testNextCode() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Cargando...';
+            
+            try {
+                const response = await fetch('/api/tasks/next-code', {
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    resultDiv.innerHTML = `<h2>Error ${response.status}</h2><pre>${error}</pre>`;
+                    return;
+                }
+                
+                const data = await response.json();
+                console.log('Data received:', data);
+                
+                resultDiv.innerHTML = `
+                    <h2>Éxito!</h2>
+                    <p><strong>Código sugerido:</strong> ${data.nextCode}</p>
+                    <p><strong>Debería ser:</strong> 260 (porque el máximo en BD es 259)</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `<h2>Error</h2><pre>${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>
