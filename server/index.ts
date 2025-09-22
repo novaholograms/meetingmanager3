@@ -11,8 +11,16 @@ import session from "express-session";
 import passport from "passport";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-import { db } from "./db.js";
-import { setupAuth } from "./auth.js";
+// Import database and auth conditionally to avoid connection errors
+let db, setupAuth;
+try {
+  const dbModule = await import("./db.js");
+  db = dbModule.db;
+  const authModule = await import("./auth.js");
+  setupAuth = authModule.setupAuth;
+} catch (error) {
+  console.warn("Database connection failed, running without database:", error.message);
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -49,7 +57,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Setup authentication
-setupAuth();
+if (setupAuth) {
+  setupAuth();
+}
 
 // Serve static files in production
 if (process.env.NODE_ENV === "production") {
