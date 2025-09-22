@@ -64,6 +64,16 @@ if (setupAuth) {
 // Serve static files in production
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(join(__dirname, "../dist/public")));
+} else {
+  // In development, serve static files if they exist
+  const staticPath = join(__dirname, "../dist/public");
+  try {
+    if (require('fs').existsSync(staticPath)) {
+      app.use(express.static(staticPath));
+    }
+  } catch (error) {
+    console.log("Static files not available yet");
+  }
 }
 
 // API Routes placeholder
@@ -117,23 +127,40 @@ wss.on('connection', (ws) => {
 // Catch-all handler for SPA in production
 if (process.env.NODE_ENV === "production") {
   app.get("*", (req, res) => {
-    res.sendFile(join(__dirname, "../dist/public/index.html"));
+    const indexPath = join(__dirname, "../dist/public/index.html");
+    if (require('fs').existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).json({ error: "Frontend not built yet. Run 'npm run build' first." });
+    }
   });
 } else {
-  // In development, serve the built frontend
+  // In development, serve the built frontend if available
   app.get("/", (req, res) => {
-    res.sendFile(join(__dirname, "../dist/public/index.html"));
+    const indexPath = join(__dirname, "../dist/public/index.html");
+    if (require('fs').existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.json({
+        message: "Development server running",
+        note: "Frontend not built yet. Run 'npm run build' to build the frontend.",
+        api: "API available at /api/*",
+        health: "/api/health"
+      });
+    }
   });
-  
-  // Serve static files in development too
-  app.use(express.static(join(__dirname, "../dist/public")));
   
   // Catch-all for SPA routes in development
   app.get("*", (req, res) => {
     if (req.path.startsWith('/api/')) {
       res.status(404).json({ error: 'API endpoint not found' });
     } else {
-      res.sendFile(join(__dirname, "../dist/public/index.html"));
+      const indexPath = join(__dirname, "../dist/public/index.html");
+      if (require('fs').existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).json({ error: "Page not found. Frontend not built yet." });
+      }
     }
   });
 }
